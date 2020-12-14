@@ -1,0 +1,12 @@
+*.xml
+*.iml
+
+# test images
+*.jpg
+
+# weights
+*.npz
+*.ckpt
+
+__pycache__/
+.idea/
