@@ -1,0 +1,10 @@
+flask
+flask-restx
+pillow
+numpy
+torch
+munch
+torchvision
+opencv-python
+scikit-image
+gunicorn
