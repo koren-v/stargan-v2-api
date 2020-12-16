@@ -1,4 +1,7 @@
-from flask import Flask, request, send_file, make_response, jsonify
+import io
+import base64
+
+from flask import Flask, request, make_response, jsonify
 from flask_restx import Resource, Api
 
 from PIL import Image
@@ -36,9 +39,17 @@ class Interpolator(Resource):
                 return make_response(jsonify(error=message), 400)
 
             predictor = Predictor(entity=entity)
-            predictor.create_interpolation(label, src_image=src, ref_image=ref)
+            result_image = predictor.create_interpolation(label, src_image=src, ref_image=ref)
 
-            return make_response(send_file("images/res.jpg"), 200)
+            raw_bytes = io.BytesIO()
+            result_image.save(raw_bytes, "JPEG")
+            raw_bytes.seek(0)
+
+            image_base64 = base64.b64encode(raw_bytes.read())
+            str_image = str(image_base64)
+
+            return make_response(jsonify({"image": str_image}), 200)
+
         except Exception as e:
             message = f"Exception occurred: {e}"
             return make_response(jsonify(error=message), 400)

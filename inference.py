@@ -63,8 +63,6 @@ class Predictor(torch.nn.Module):
             ref_image: Image
     ):
 
-        result_image = pathlib.Path("images/res.jpg")
-
         if self.labels == CELEBRITY_LABELS:
             aligned_src, aligned_ref = self._align(src_image=src_image, ref_image=ref_image)
         else:
@@ -73,10 +71,9 @@ class Predictor(torch.nn.Module):
 
         ref_target = torch.tensor([self.labels[ref_label]])
         self._load_checkpoint(self.checkpoint_path, self.device, **self.nets_ema)
-        self._translate_using_reference(aligned_src.to(self.device),
-                                        aligned_ref.to(self.device),
-                                        ref_target.to(self.device),
-                                        result_image)
+        return self._translate_using_reference(aligned_src.to(self.device),
+                                               aligned_ref.to(self.device),
+                                               ref_target.to(self.device))
 
     def _align(self, src_image: Image, ref_image: Image):
         aligner = FaceAligner(self.wing_path, self.lm_path, self.image_size)
@@ -88,12 +85,11 @@ class Predictor(torch.nn.Module):
         return aligned_images
 
     @torch.no_grad()
-    def _translate_using_reference(self, x_src, x_ref, y_ref, filename):
+    def _translate_using_reference(self, x_src, x_ref, y_ref):
         masks = self.nets_ema.fan.get_heatmap(x_src) if self.w_hpf > 0 else None
         s_ref = self.nets_ema.style_encoder(x_ref, y_ref)
         x_fake = self.nets_ema.generator(x_src, s_ref, masks=masks)
-        self._save_image(x_fake, 1, filename)
-        del s_ref
+        return self._to_image(x_fake)
 
     @staticmethod
     def _load_checkpoint(checkpoint_path, device, **nets_ema):
@@ -106,7 +102,10 @@ class Predictor(torch.nn.Module):
         out = (x + 1) / 2
         return out.clamp_(0, 1)
 
-    def _save_image(self, x, ncol, filename):
-        x = self._denormalize(x)
-        filename.parent.mkdir(exist_ok=True)
-        utils.save_image(x.cpu(), filename, nrow=ncol, padding=0)
+    def _to_image(self, tensor) -> Image:
+        tensor = self._denormalize(tensor)
+        grid = utils.make_grid(tensor, nrow=1, padding=0, pad_value=0,
+                               normalize=False, range=None, scale_each=False)
+        # Add 0.5 after unnormalizing to [0, 255] to round to nearest integer
+        ndarr = grid.mul(255).add_(0.5).clamp_(0, 255).permute(1, 2, 0).to('cpu', torch.uint8).numpy()
+        return Image.fromarray(ndarr)
