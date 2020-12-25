@@ -1,5 +1,10 @@
 # Stargan V2 Api
 
+*This branch does not use intermediate image saving unlike the master branch, so it should be a little faster*
+
+*Note: this realization sends byte array instead of file*
+
+---
 The refactored code for inference of [PyTorch implementation](https://github.com/clovaai/stargan-v2) of [StarGAN v2](https://arxiv.org/abs/1912.01865) wrapped into Flask-API. 
 
 You can build a **Docker image** to run the application with the WSGI server (Gunicorn). For details check [this branch](https://github.com/koren-v/stargan-v2-api/tree/docker_gunicorn).
