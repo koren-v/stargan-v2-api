@@ -1,9 +1,6 @@
 *.xml
 *.iml
 
-# test images
-*.jpg
-
 # weights
 *.npz
 *.ckpt

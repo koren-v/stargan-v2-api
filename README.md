@@ -25,3 +25,9 @@ There is a single **/Interpolate** endpoint that expects POST method with JSON b
 * src: *(file)* Source image ([Note](https://github.com/clovaai/stargan-v2#generating-interpolation-videos) that it should be cropped similar to examples from CelebA-HQ or AFHQ dataset)
 * ref: *(file)* Reference image with the same requirement
 * label: *(string)* The label of the target image. If you are interested in CelebA-HQ format, there ate two possible labels: "male", "female", if you are interested in AFHQ format, available next labels: "cat", "dog", "wild"
+
+**The response is a file as src and ref**
+
+Example of response:
+
+![image](images/res.jpg)
